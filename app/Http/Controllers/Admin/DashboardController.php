@@ -57,19 +57,29 @@ class DashboardController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         $plans = TaskAiPlan::orderBy('sort_order')->orderBy('duration_days')->get();
+
+        if ($request->ajax()) {
+            return view('admin.partials.users-table', array_merge($stats, compact('users', 'plans')));
+        }
 
         return view('admin.users', array_merge($stats, compact('users', 'plans', 'search')));
     }
 
-    public function payments()
+    public function payments(Request $request)
     {
         $stats = $this->dashboardStats();
         $recentPayments = TaskAiPayment::with(['user', 'device'])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+
+        if ($request->ajax()) {
+            return view('admin.partials.payments-table', array_merge($stats, compact('recentPayments')));
+        }
 
         return view('admin.payments', array_merge($stats, compact('recentPayments')));
     }

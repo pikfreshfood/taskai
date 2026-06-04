@@ -1,5 +1,5 @@
 @if($paginator->hasPages())
-    <div class="flex flex-col gap-3 border-t border-green-500/12 px-5 py-4 md:flex-row md:items-center md:justify-between">
+    <div class="pagination flex flex-col gap-3 border-t border-green-500/12 px-5 py-4 md:flex-row md:items-center md:justify-between">
         <p class="text-xs text-green-100/45">
             Showing {{ $paginator->firstItem() }} to {{ $paginator->lastItem() }} of {{ $paginator->total() }} records
         </p>

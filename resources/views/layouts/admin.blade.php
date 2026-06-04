@@ -153,5 +153,56 @@
         resizeMatrix();
         drawMatrix();
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function ajaxLoad(url, wrapperId) {
+                const wrapper = document.getElementById(wrapperId);
+                if (!wrapper) return;
+                wrapper.innerHTML = '<div class="px-5 py-10 text-center text-sm text-green-100/42">Loading...</div>';
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error('Request failed');
+                    return r.text();
+                })
+                .then(html => { wrapper.innerHTML = html; bindPagination(); bindSearch(); })
+                .catch(() => { wrapper.innerHTML = '<div class="px-5 py-10 text-center text-sm text-red-100/62">Failed to load.</div>'; });
+            }
+
+            function bindPagination() {
+                document.querySelectorAll('.pagination a').forEach(a => {
+                    a.addEventListener('click', function (e) {
+                        const wrapper = this.closest('[id$="-table-wrapper"]');
+                        if (!wrapper) return;
+                        e.preventDefault();
+                        ajaxLoad(this.href, wrapper.id);
+                    });
+                });
+            }
+
+            function bindSearch() {
+                const searchInput = document.querySelector('input[name="search"]');
+                if (!searchInput) return;
+                const form = searchInput.closest('form');
+                if (!form) return;
+
+                let timeout;
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        const params = new URLSearchParams(new FormData(form));
+                        const url = form.getAttribute('action') + '?' + params.toString();
+                        const wrapper = document.getElementById('users-table-wrapper');
+                        if (wrapper) ajaxLoad(url, 'users-table-wrapper');
+                    }, 350);
+                });
+            }
+
+            bindPagination();
+            bindSearch();
+        });
+    </script>
 </body>
 </html>
