@@ -34,8 +34,19 @@
 
         <section class="card overflow-hidden">
             <div class="border-b border-green-500/18 px-5 py-4">
-                <h2 class="text-xl font-black uppercase tracking-[0.12em] text-white">User Records</h2>
-                <p class="mt-1 text-xs text-green-100/48">Showing 10 users per page.</p>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-xl font-black uppercase tracking-[0.12em] text-white">User Records</h2>
+                        <p class="mt-1 text-xs text-green-100/48">Showing 10 users per page.</p>
+                    </div>
+                    <form method="GET" action="{{ route('admin.users') }}" class="flex gap-2">
+                        <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search name or email..." class="w-56 border border-green-500/30 bg-black/55 px-3 py-2 font-mono text-sm text-green-100 placeholder:text-green-700/70 focus:border-cyan-300 focus:ring-1 focus:ring-cyan-300">
+                        <button type="submit" class="border border-green-400/35 bg-green-500/5 px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-green-300 transition hover:bg-green-500/15 hover:text-green-100">Search</button>
+                        @if(request('search'))
+                            <a href="{{ route('admin.users') }}" class="border border-red-400/35 bg-red-500/5 px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-red-300 transition hover:bg-red-500/15 hover:text-red-100">Clear</a>
+                        @endif
+                    </form>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -123,7 +134,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-5 py-12 text-center text-sm text-green-100/42">No users yet.</td>
+                                <td colspan="7" class="px-5 py-12 text-center text-sm text-green-100/42">{{ request('search') ? 'No users match your search.' : 'No users yet.' }}</td>
                             </tr>
                         @endforelse
                     </tbody>

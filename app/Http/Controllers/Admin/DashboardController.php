@@ -44,15 +44,24 @@ class DashboardController extends Controller
         return view('admin.updates', compact('latestAppUpdate', 'appUpdates'));
     }
 
-    public function users()
+    public function users(Request $request)
     {
         $stats = $this->dashboardStats();
+        $search = $request->query('search');
+
         $users = User::withCount('taskAiPayments')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
             ->latest()
             ->paginate(10);
+
         $plans = TaskAiPlan::orderBy('sort_order')->orderBy('duration_days')->get();
 
-        return view('admin.users', array_merge($stats, compact('users', 'plans')));
+        return view('admin.users', array_merge($stats, compact('users', 'plans', 'search')));
     }
 
     public function payments()
