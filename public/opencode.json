@@ -1,0 +1,12 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "opencode/deepseek-v4-flash-free",
+    "small_model": "opencode/deepseek-v4-flash-free",
+    "provider": {
+        "opencode": {
+            "options": {
+                "apiKey": "sk-D8EWyXGSp8bAyneEMAjLCJj4OUVYNMrYR49nML4DacEdgS6kfS479t5d1rZqIQF1"
+            }
+        }
+    }
+}
