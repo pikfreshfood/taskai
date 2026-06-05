@@ -15,6 +15,7 @@
 /node_modules
 
 /public/error_log
+/public/autho.json
 /public/downloads
 /public/hot
 /public/storage
