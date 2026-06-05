@@ -111,10 +111,6 @@
                                 </div>
                             </a>
                         @endforeach
-                        <a href="{{ route('home') }}" class="border border-cyan-400/20 bg-cyan-400/5 p-4 text-cyan-100/70 transition hover:border-cyan-300/45 hover:text-cyan-100">
-                            <span class="block text-sm font-black uppercase tracking-[0.12em]">Home Page</span>
-                            <span class="mt-1 block text-xs leading-5 text-cyan-100/42">Return to public landing page</span>
-                        </a>
                     </nav>
                 </div>
             </aside>
