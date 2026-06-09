@@ -80,7 +80,7 @@
         </header>
 
         <div class="mx-auto flex w-full flex-col md:flex-row">
-            <aside class="admin-sidebar md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:w-72 md:shrink-0 md:overflow-y-auto">
+            <aside class="admin-sidebar max-h-[calc(100vh-4rem)] overflow-y-auto md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:w-72 md:shrink-0">
                 @php
                     $adminLinks = [
                         ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'code' => 'SYS', 'description' => 'Overview and quick status'],
