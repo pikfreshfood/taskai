@@ -84,7 +84,7 @@
 
                 <div class="border border-cyan-400/20 bg-cyan-400/5 p-5 text-xs leading-6 text-cyan-100/65">
                     <span class="font-bold text-cyan-300">SMTP:</span>
-                    messages use the configured Task AI mail account. Keep messages short and send only useful updates to avoid spam complaints.
+                    messages use the configured Task AI mail account and include the app icon plus support@taskai.com.ng in the footer.
                 </div>
             </aside>
         </div>

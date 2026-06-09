@@ -80,7 +80,7 @@
         </header>
 
         <div class="mx-auto flex w-full flex-col md:flex-row">
-            <aside class="admin-sidebar max-h-[calc(100vh-4rem)] overflow-y-auto md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:w-72 md:shrink-0">
+            <aside class="admin-sidebar md:sticky md:top-16 md:w-72 md:shrink-0" style="height: calc(100dvh - 4rem); max-height: calc(100dvh - 4rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;">
                 @php
                     $adminLinks = [
                         ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'code' => 'SYS', 'description' => 'Overview and quick status'],
@@ -92,7 +92,7 @@
                         ['route' => 'admin.authorization', 'label' => 'Auth JSON', 'code' => 'AUT', 'description' => 'Edit Codex and OpenCode JSON files'],
                     ];
                 @endphp
-                <div class="p-4">
+                <div class="p-4 pb-10">
                     <div class="mb-4 border border-green-500/20 bg-green-500/5 p-4">
                         <p class="terminal-label text-[10px] font-bold text-green-400/70">left menu</p>
                         <p class="mt-2 text-sm font-black uppercase tracking-[0.14em] text-white">Admin Nodes</p>

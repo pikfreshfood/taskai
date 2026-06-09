@@ -140,7 +140,7 @@ class DashboardController extends Controller
         $query->orderBy('id')->chunk(50, function ($users) use ($subject, $body, &$sent, &$failed) {
             foreach ($users as $user) {
                 try {
-                    Mail::raw($body, function ($mail) use ($user, $subject) {
+                    Mail::html($this->bulkEmailHtml($body), function ($mail) use ($user, $subject) {
                         $mail->to($user->email, $user->name)->subject($subject);
                     });
                     $sent++;
@@ -156,6 +156,51 @@ class DashboardController extends Controller
         }
 
         return back()->with('status', $status);
+    }
+
+    private function bulkEmailHtml(string $body): string
+    {
+        $message = nl2br(e($body));
+        $iconUrl = asset('images/taskai-icon.png');
+        $supportEmail = 'support@taskai.com.ng';
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<body style="margin:0;background:#020602;padding:24px;font-family:Arial,sans-serif;color:#d9ffe2;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#071107;border:1px solid #14532d;border-radius:8px;overflow:hidden;">
+        <tr>
+            <td style="padding:24px 28px;border-bottom:1px solid #14532d;background:#030603;">
+                <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+                    <tr>
+                        <td style="width:56px;vertical-align:middle;">
+                            <img src="{$iconUrl}" alt="Task AI" width="48" height="48" style="display:block;border-radius:8px;">
+                        </td>
+                        <td style="vertical-align:middle;">
+                            <div style="font-size:20px;font-weight:800;letter-spacing:2px;color:#00ff66;">TASK AI</div>
+                            <div style="margin-top:4px;font-size:12px;letter-spacing:1px;color:#8fffb2;">Official update</div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:28px;font-size:15px;line-height:1.7;color:#d9ffe2;">
+                {$message}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:20px 28px;border-top:1px solid #14532d;background:#030603;font-size:12px;line-height:1.6;color:#8fffb2;">
+                <strong style="color:#00ff66;">Need help?</strong>
+                Contact Task AI support at
+                <a href="mailto:{$supportEmail}" style="color:#67e8f9;text-decoration:none;">{$supportEmail}</a>.
+                <div style="margin-top:10px;color:#5fbf7a;">Thank you for using Task AI.</div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
     }
 
     public function authorization()
