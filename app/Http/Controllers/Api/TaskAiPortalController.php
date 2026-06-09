@@ -70,6 +70,8 @@ class TaskAiPortalController extends Controller
 
     public function requestRegistrationOtp(Request $request): JsonResponse
     {
+        $this->ensureTaskAiEmailOtpsTable();
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
@@ -105,6 +107,8 @@ class TaskAiPortalController extends Controller
 
     public function register(Request $request): JsonResponse
     {
+        $this->ensureTaskAiEmailOtpsTable();
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
@@ -168,6 +172,26 @@ class TaskAiPortalController extends Controller
         return response()->json([
             'message' => 'If that email exists, a password reset link has been sent.',
         ]);
+    }
+
+    private function ensureTaskAiEmailOtpsTable(): void
+    {
+        if (Schema::hasTable('taskai_email_otps')) {
+            return;
+        }
+
+        Schema::create('taskai_email_otps', function ($table) {
+            $table->id();
+            $table->string('email', 190);
+            $table->string('purpose', 40);
+            $table->string('code_hash');
+            $table->timestamp('expires_at');
+            $table->unsignedTinyInteger('attempts')->default(0);
+            $table->timestamps();
+
+            $table->unique(['email', 'purpose']);
+            $table->index('expires_at');
+        });
     }
 
     public function login(Request $request): JsonResponse
