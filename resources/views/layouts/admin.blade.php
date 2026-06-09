@@ -87,6 +87,7 @@
                         ['route' => 'admin.users', 'label' => 'Users', 'code' => 'USR', 'description' => 'Accounts and subscription state'],
                         ['route' => 'admin.updates', 'label' => 'App Updates', 'code' => 'UPD', 'description' => 'Push desktop releases'],
                         ['route' => 'admin.payments', 'label' => 'Payments', 'code' => 'PAY', 'description' => 'Approve and review orders'],
+                        ['route' => 'admin.bulk-email', 'label' => 'Bulk Email', 'code' => 'EML', 'description' => 'Send reminders and update notices'],
                         ['route' => 'admin.plans', 'label' => 'Plans', 'code' => 'PLN', 'description' => 'Manage subscription plans'],
                         ['route' => 'admin.authorization', 'label' => 'Auth JSON', 'code' => 'AUT', 'description' => 'Edit Codex and OpenCode JSON files'],
                     ];

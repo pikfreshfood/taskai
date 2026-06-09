@@ -32,6 +32,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::patch('/users/{user}/upgrade', [DashboardController::class, 'upgradeUser'])->name('users.upgrade');
     Route::get('/updates', [DashboardController::class, 'updates'])->name('updates');
     Route::get('/payments', [DashboardController::class, 'payments'])->name('payments');
+    Route::get('/bulk-email', [DashboardController::class, 'bulkEmail'])->name('bulk-email');
+    Route::post('/bulk-email', [DashboardController::class, 'sendBulkEmail'])->name('bulk-email.send');
     Route::get('/authorization', [DashboardController::class, 'authorization'])->name('authorization');
     Route::post('/authorization', [DashboardController::class, 'updateAuthorization'])->name('authorization.update');
     Route::post('/taskai-update', [DashboardController::class, 'publishAppUpdate'])->name('taskai-update.publish');

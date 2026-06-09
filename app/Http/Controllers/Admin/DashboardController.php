@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -82,6 +83,79 @@ class DashboardController extends Controller
         }
 
         return view('admin.payments', array_merge($stats, compact('recentPayments')));
+    }
+
+    public function bulkEmail()
+    {
+        $recipientCounts = [
+            'all' => User::whereNotNull('email')->count(),
+            'free' => User::whereNotNull('email')->whereNull('taskai_upgraded_at')->count(),
+            'active' => User::whereNotNull('email')
+                ->whereNotNull('taskai_upgraded_at')
+                ->where(function ($query) {
+                    $query->whereNull('taskai_upgrade_expires_at')
+                        ->orWhere('taskai_upgrade_expires_at', '>', now());
+                })
+                ->count(),
+            'expired' => User::whereNotNull('email')
+                ->whereNotNull('taskai_upgraded_at')
+                ->whereNotNull('taskai_upgrade_expires_at')
+                ->where('taskai_upgrade_expires_at', '<=', now())
+                ->count(),
+        ];
+
+        return view('admin.bulk-email', compact('recipientCounts'));
+    }
+
+    public function sendBulkEmail(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'audience' => ['required', Rule::in(['all', 'free', 'active', 'expired'])],
+            'subject' => ['required', 'string', 'max:180'],
+            'message' => ['required', 'string', 'max:10000'],
+        ]);
+
+        $query = User::query()
+            ->whereNotNull('email')
+            ->where('email', '!=', '');
+
+        match ($data['audience']) {
+            'free' => $query->whereNull('taskai_upgraded_at'),
+            'active' => $query->whereNotNull('taskai_upgraded_at')
+                ->where(function ($query) {
+                    $query->whereNull('taskai_upgrade_expires_at')
+                        ->orWhere('taskai_upgrade_expires_at', '>', now());
+                }),
+            'expired' => $query->whereNotNull('taskai_upgraded_at')
+                ->whereNotNull('taskai_upgrade_expires_at')
+                ->where('taskai_upgrade_expires_at', '<=', now()),
+            default => null,
+        };
+
+        $sent = 0;
+        $failed = 0;
+        $subject = trim($data['subject']);
+        $body = trim($data['message']);
+
+        $query->orderBy('id')->chunk(50, function ($users) use ($subject, $body, &$sent, &$failed) {
+            foreach ($users as $user) {
+                try {
+                    Mail::raw($body, function ($mail) use ($user, $subject) {
+                        $mail->to($user->email, $user->name)->subject($subject);
+                    });
+                    $sent++;
+                } catch (\Throwable) {
+                    $failed++;
+                }
+            }
+        });
+
+        $status = "Bulk email sent to {$sent} user(s).";
+        if ($failed > 0) {
+            $status .= " {$failed} email(s) failed.";
+        }
+
+        return back()->with('status', $status);
     }
 
     public function authorization()
