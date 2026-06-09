@@ -15,8 +15,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -65,24 +68,106 @@ class TaskAiPortalController extends Controller
         return redirect()->away($downloadUrl);
     }
 
+    public function requestRegistrationOtp(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:190', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        $email = strtolower($data['email']);
+        $otp = (string) random_int(100000, 999999);
+
+        DB::table('taskai_email_otps')->updateOrInsert(
+            ['email' => $email, 'purpose' => 'registration'],
+            [
+                'code_hash' => Hash::make($otp),
+                'expires_at' => now()->addMinutes(10),
+                'attempts' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+
+        Mail::raw(
+            "Your Task AI registration OTP is {$otp}.\n\nThis code expires in 10 minutes. If you did not request this, ignore this email.",
+            function ($message) use ($email) {
+                $message->to($email)->subject('Your Task AI registration OTP');
+            },
+        );
+
+        return response()->json([
+            'otp_required' => true,
+            'message' => 'OTP sent. Check your email and enter the 6-digit code to finish registration.',
+        ]);
+    }
+
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
+            'otp' => ['required', 'digits:6'],
             'device_serial' => ['required', 'string', 'max:255'],
         ]);
 
+        $email = strtolower($data['email']);
+        $otpRow = DB::table('taskai_email_otps')
+            ->where('email', $email)
+            ->where('purpose', 'registration')
+            ->first();
+
+        if (! $otpRow || now()->greaterThan($otpRow->expires_at)) {
+            throw ValidationException::withMessages([
+                'otp' => ['The registration OTP has expired. Request a new code.'],
+            ]);
+        }
+
+        if ((int) $otpRow->attempts >= 5 || ! Hash::check($data['otp'], $otpRow->code_hash)) {
+            DB::table('taskai_email_otps')
+                ->where('id', $otpRow->id)
+                ->increment('attempts');
+
+            throw ValidationException::withMessages([
+                'otp' => ['The registration OTP is invalid.'],
+            ]);
+        }
+
         $user = User::create([
             'name' => $data['name'],
-            'email' => strtolower($data['email']),
+            'email' => $email,
+            'email_verified_at' => now(),
             'password' => $data['password'],
         ]);
+
+        DB::table('taskai_email_otps')->where('id', $otpRow->id)->delete();
 
         $device = $this->touchDevice($data['device_serial'], $user);
 
         return response()->json($this->authPayload($user, $device), 201);
+    }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $status = Password::sendResetLink([
+            'email' => strtolower($data['email']),
+        ]);
+
+        if ($status !== Password::RESET_LINK_SENT && $status !== Password::INVALID_USER) {
+            throw ValidationException::withMessages([
+                'email' => [__($status)],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'If that email exists, a password reset link has been sent.',
+        ]);
     }
 
     public function login(Request $request): JsonResponse
