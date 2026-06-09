@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\TaskAiResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,5 +59,10 @@ class User extends Authenticatable
     public function taskAiPayments(): HasMany
     {
         return $this->hasMany(TaskAiPayment::class);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new TaskAiResetPasswordNotification($token));
     }
 }
