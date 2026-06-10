@@ -80,7 +80,6 @@ class TaskAiPortalController extends Controller
 
         $email = strtolower($data['email']);
         $otp = (string) random_int(100000, 999999);
-
         DB::table('taskai_email_otps')->updateOrInsert(
             ['email' => $email, 'purpose' => 'registration'],
             [
